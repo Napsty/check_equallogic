@@ -62,7 +62,7 @@
 #########################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 #########################################################################
-help="check_equallogic (c) 2009-2012 Claudio Kuenzler (published under GPL licence)\n
+help="check_equallogic (c) 2009-2013 Claudio Kuenzler (published under GPL licence)\n
 Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]\n
 Options:\n-H Hostname\n-C SNMP-Community name (at least read-only)\n-t Type to check, see list below\n-v Name of volume to check\n-w Warning Threshold\n-c Critical Threshold\n
 Requirements: snmpwalk, awk, grep, wc\n
