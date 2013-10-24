@@ -59,6 +59,7 @@
 # 20121204 Changed raid percentage output when multiple members around	#
 # 20121228 ps type now also checks for failed power supply fans		#
 # 20130728 Added copy to spare raid status by Peter Lieven		#
+# 20131024 Bugfix in temp check (Backplane_sensor_0 was not shown)      #
 #########################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 #########################################################################
@@ -150,9 +151,9 @@ done
        temp)
 		#get names and temperatures
 	      declare -a sensornames=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.2 | tr ' ' '_' | tr -d '"' ))
-	      declare -a sensortemp=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.3 | awk -F : '{print $1}' | tr '\n' ' '))
-	      declare -a sensortemp_min=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.8 | awk -F : '{print $1}' | tr '\n' ' '))
-	      declare -a sensortemp_max=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.6 | awk -F : '{print $1}' | tr '\n' ' '))
+	      declare -a sensortemp=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.3 | awk -F : '{print $1}'))
+	      declare -a sensortemp_min=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.8 | awk -F : '{print $1}'))
+	      declare -a sensortemp_max=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.6 | awk -F : '{print $1}'))
 
               # put this name, temp... together
               c=0
@@ -173,7 +174,7 @@ done
               done
 
 		#Cut leading blank
-              perfdata=$( echo $perfdata | cut -d' ' -f 2-)
+              perfdata=$(echo $perfdata | sed 's/^ //')
 
               if [[ ${#sensorfinalcrit[*]} -gt 0 ]]
               then echo "CRITICAL Sensor: ${sensorfinalcrit[*]} | $perfdata"; exit ${STATE_CRITICAL}
