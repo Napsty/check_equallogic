@@ -798,7 +798,7 @@ if [ -z "${volume}" ]
   then
   echo "CRITICAL - No volume name given."; exit 2
 fi
-volarray=$(snmpwalk -v 2c -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | grep -n "\"${volume}\"" | sort -u | cut -d : -f1)
+volarray=$(snmpwalk -v 2c -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | grep -n "\"${volume}\"" | sed -n '1p' | cut -d : -f1)
 volavailspace=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.8 | awk "NR==${volarray}")
 humanavailspace=$((${volavailspace} / 1024))
 perfavailspace=$((${volavailspace}*1024*1024))
