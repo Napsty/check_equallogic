@@ -61,6 +61,7 @@
 # 20130728 Added copy to spare raid status by Peter Lieven                     #
 # 20131024 Bugfix in temp check (Backplane_sensor_0 was not shown)             #
 # 20131025 Optical cleanup                                                     #
+# 20131122 Bugfix in vol check when volumes spread across members              #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
@@ -797,7 +798,7 @@ if [ -z "${volume}" ]
   then
   echo "CRITICAL - No volume name given."; exit 2
 fi
-volarray=$(snmpwalk -v 2c -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | grep -n "\"${volume}\"" | cut -d : -f1)
+volarray=$(snmpwalk -v 2c -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | grep -n "\"${volume}\"" | sort -u | cut -d : -f1)
 volavailspace=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.8 | awk "NR==${volarray}")
 humanavailspace=$((${volavailspace} / 1024))
 perfavailspace=$((${volavailspace}*1024*1024))
