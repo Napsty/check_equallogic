@@ -62,6 +62,7 @@
 # 20131024 Bugfix in temp check (Backplane_sensor_0 was not shown)             #
 # 20131025 Optical cleanup                                                     #
 # 20131122 Bugfix in vol check when volumes spread across members              #
+# 20131219 Bugfix in poolusage check when a pool was not used (0 size)         #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
