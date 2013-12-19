@@ -613,8 +613,8 @@ while [ $c2 -lt $c ]
   poolinuse=$(( ${poolused[$c2]}+${pooldelegated[$c2]}+${poolreplication[$c2]} ))
   freestorage=$(( (${pooltotal[$c2]} - ${poolinuse})/1024 ))
   if [[ ${poolinuse} -gt 0 && ${pooltotal[$c2]} -gt 0 ]]
-    then
-    usedpercent=$(( (${poolinuse} * 100)/${pooltotal[$c2]} ))
+    then usedpercent=$(( (${poolinuse} * 100)/${pooltotal[$c2]} ))
+    else usedpercent=0
   fi
   let pooltotal[$c2]=pooltotal[$c2]/1024
   let pooldelegated[$c2]=pooldelegated[$c2]/1024
