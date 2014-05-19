@@ -63,6 +63,7 @@
 # 20131025 Optical cleanup                                                     #
 # 20131122 Bugfix in vol check when volumes spread across members              #
 # 20131219 Bugfix in poolusage check when a pool was not used (0 size)         #
+# 20140519 Added a connectivity check                                          #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
@@ -128,6 +129,15 @@ do
                ;;
        esac
 done
+
+
+# Check connectivity
+#########################################################################
+if ! $(snmpwalk -v 2c -O vqe -c ${community} ${host} > /dev/null 2>&1)
+then
+  echo "No Response from ${host} - check SNMP configuration?"
+  exit ${STATE_CRITICAL}
+fi
 
 
 # Check Different Types
