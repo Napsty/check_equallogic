@@ -63,6 +63,7 @@
 # 20131025 Optical cleanup                                                     #
 # 20131122 Bugfix in vol check when volumes spread across members              #
 # 20131219 Bugfix in poolusage check when a pool was not used (0 size)         #
+# 20140626 Bugfix in etherrors check                                           #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
@@ -439,8 +440,8 @@ fi
 etherrors)
 countCritical=0
 countWarning=0
-if [ -z $warning ]; then warning=0; fi
-if [ -z $critical ]; then critical=0; fi
+if [ -z $warning ]; then warning=1; fi
+if [ -z $critical ]; then critical=2; fi
 
 #get interface list
 declare -a ifcount=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.2.1.2.2.1.1 | wc -l ))
@@ -453,14 +454,14 @@ for ((i=2; i<=$(($ifcount+1)); i++))
   outerr[$i]=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.2.1.2.2.1.20.${i}) #IF-MIB::ifOutErrors.${i}
   perfdata=$perfdata" ${iface[$i]}_in=${inerr[$i]};${warning};${critical} ${iface[$i]}_out=${outerr[$i]};${warning};${critical}"                          
   #...having errors...
-  if [ ${inerr[$i]} -gt ${critical} ] || [ ${outerr[$i]} -gt ${critical} ]
+  if [ ${inerr[$i]} -ge ${critical} ] || [ ${outerr[$i]} -ge ${critical} ]
     then
     statustext="${iface[$i]}: ${inerr[$i]}/${outerr[$i]}  $statustext"
     let countCritical++
-  elif [ ${inerr[$i]} -gt ${warning} ] || [ ${outerr[$i]} -gt ${warning} ]
+  elif [ ${inerr[$i]} -ge ${warning} ] || [ ${outerr[$i]} -ge ${warning} ]
     then
     statustext="${iface[$i]}: ${inerr[$i]}/${outerr[$i]}  $statustext"
-    let countcountWarning++
+    let countWarning++
   fi
 done
 
