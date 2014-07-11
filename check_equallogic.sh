@@ -64,6 +64,7 @@
 # 20131122 Bugfix in vol check when volumes spread across members              #
 # 20131219 Bugfix in poolusage check when a pool was not used (0 size)         #
 # 20140626 Bugfix in etherrors check                                           #
+# 20140711 Bugfix in disk check when hostname is not resolve name              #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
@@ -213,6 +214,11 @@ fi
 # --- disk --- #
 disk)
 diskresult=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.3.1.1.1.8)
+if [ -z ${diskresult} ]
+then
+   echo "UNKNOWN: check disk failed, please check your config."
+   exit ${STATE_UNKNOWN}
+fi
 diskstatusok=0
 diskstatusspare=0
 diskstatusfailed=0
