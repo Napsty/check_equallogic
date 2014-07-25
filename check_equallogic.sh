@@ -64,6 +64,7 @@
 # 20131122 Bugfix in vol check when volumes spread across members              #
 # 20131219 Bugfix in poolusage check when a pool was not used (0 size)         #
 # 20140626 Bugfix in etherrors check                                           #
+# 20140711 Added snmp connection check function                                #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
@@ -130,6 +131,27 @@ do
        esac
 done
 
+# SNMP Connection Check
+#########################################################################
+# Use this function as snmp connection check and to have a global list of all membernames
+getmembernames () {
+  membernames=($(snmpwalk -v 2c -On -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.1.1.9))
+  if [ ${#membernames[*]} -eq 0 ]
+  then echo "EQUALLOGIC ${type} CRITICAL - SNMP Connection failed"
+  exit 2
+  else 
+    # Get the OID and Membername and put them into arrays
+    i=0
+    while read -r line
+    do
+      memberoid[$i]=$(echo $line | awk '{print $1}')
+      membername[$i]=$(echo $line | awk '{print $4}')
+      #echo ${memberoid[$i]} # debug
+      #echo ${membername[$i]} # debug
+      let i++
+    done < <(echo "${membernames[*]}" | sed "s/.1.3.6/\n.1.3.6/g" | sed "1d")
+  fi
+}
 
 # Check Different Types
 #########################################################################
@@ -137,6 +159,7 @@ case ${type} in
 
 # --- Health --- #
 health)
+getmembernames
 healthstatus=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.5.1.1)
 
 s_crit=0; s_warn=0; s_ok=0; s_unknown=0
@@ -156,6 +179,7 @@ if [ $s_ok -gt 0 ]; then echo "OVERALL HEALTH OK"; exit ${STATE_OK}; fi
 
 # --- temp --- #
 temp)
+getmembernames
 #get names and temperatures
 declare -a sensornames=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.2 | tr ' ' '_' | tr -d '"' ))
 declare -a sensortemp=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.6.1.3 | awk -F : '{print $1}'))
@@ -192,6 +216,7 @@ fi
 
 # --- diskold (old disk check) --- #
 diskold)
+getmembernames
 diskstatusok=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.3.1.1.1.8 | grep 1 | wc -l)
 diskstatusspare=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.3.1.1.1.8 | grep 2 | wc -l)
 diskstatusfailed=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.3.1.1.1.8 | grep 3 | wc -l)
@@ -212,6 +237,7 @@ fi
 
 # --- disk --- #
 disk)
+getmembernames
 diskresult=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.3.1.1.1.8)
 diskstatusok=0
 diskstatusspare=0
@@ -246,6 +272,7 @@ fi
 
 # --- diskusage --- #
 diskusage)
+getmembernames
 totalstorage_list=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.10.1.1)
 usedstorage_list=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.10.1.2)
 
@@ -289,6 +316,7 @@ fi
 
 # --- raid --- #
 raid)
+getmembernames
 raidstatus=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.13.1.1)
 
 s8=0; s7=0; s6=0; s5=0; s4=0; s3=0; s2=0; s1=0
@@ -320,6 +348,7 @@ if [ $s1 -gt 0 ]; then echo "RAID OK"; exit ${STATE_OK}; fi
 
 # --- uptime --- #
 uptime)
+getmembernames
 uptimestatus=$(snmpwalk -v 2c -O v -c ${community} ${host} 1.3.6.1.2.1.1.3.0)
 echo "${uptimestatus}"
 exit ${STATE_OK}
@@ -327,6 +356,7 @@ exit ${STATE_OK}
 
 # --- ps (power supplies) --- #
 ps)
+getmembernames
 psstate=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.8.1.3)
 psfanstate=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.8.1.4)
 
@@ -358,6 +388,7 @@ fi
 
 # --- info --- #
 info)
+getmembernames
 membernumber=$(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.11.1.1 | wc -l)
 declare -a modelnumber=($(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.11.1.1 | sort -u))
 declare -a serialnumber=($(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.11.1.2))
@@ -393,6 +424,7 @@ exit ${STATE_OK}
 
 # --- ethif (Ethernet Interfaces) --- #
 ethif)
+getmembernames
 i=0
 for line in $(snmpwalk -v 2c -O vq -c ${community} ${host} 1.3.6.1.2.1.2.2.1.2)
   do ethnames[${i}]=$line; i=$(($i + 1 ))
@@ -438,6 +470,7 @@ fi
 
 # --- etherrors --- #
 etherrors)
+getmembernames
 countCritical=0
 countWarning=0
 if [ -z $warning ]; then warning=1; fi
@@ -481,6 +514,7 @@ fi
 
 # --- conn (Connections) --- #
 conn)
+getmembernames
 connections=0
 for line in $(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.12.1.1)
   do connections=`expr ${connections} + ${line}`
@@ -501,6 +535,7 @@ fi
 
 # --- poolconn (Pool Connections) --- #
 poolconn)
+getmembernames
 highest=0
 for line in $(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.12.1.1)
   do
@@ -525,6 +560,7 @@ fi
 
 # --- fan --- #
 fan)
+getmembernames
 declare -a fannames=($(snmpwalk -v 2c -O vqe -c ${community} ${host} .1.3.6.1.4.1.12740.2.1.7.1.2 | tr '\n' ' '))
 
 #find out which fans are in critical state
@@ -572,6 +608,7 @@ fi
 
 # --- poolusage --- #
 poolusage)
+getmembernames
 exitstate=0
 c=1
 for x in `snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.16.1.2.1.1`
@@ -655,6 +692,7 @@ exit ${exitstate}
 
 # --- memberusage --- #
 memberusage)
+getmembernames
 bad=0
 c=1
 for x in `snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.2.1.10.1.1`
@@ -708,6 +746,7 @@ exit $bad
 
 # --- volumes --- #
 volumes)
+getmembernames
 volumescount=$(snmpwalk -v 2c -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | wc -l)
 declare -a volumenames=($(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | tr '\n' ' '))
 declare -a volumeavailspace=($(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.8 | tr '\n' ' '))
@@ -795,6 +834,7 @@ fi
 
 # --- vol (single volume) --- #
 vol)	
+getmembernames
 # Get Array No. for wanted Volume Name: ./check_equallogic -H x.x.x.x -C public -t vol -v-v  V2
 if [ -z "${volume}" ]
   then
@@ -827,6 +867,7 @@ fi
 
 # --- snapshots --- #
 snapshots)
+getmembernames
 volumescount=$(snmpwalk -v 2c -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | wc -l)
 declare -a volumenames=($(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | tr '\n' ' '))
 #Get the configured warning theshold stored in the unit for each volume
