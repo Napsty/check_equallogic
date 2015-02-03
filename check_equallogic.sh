@@ -65,10 +65,11 @@
 # 20131219 Bugfix in poolusage check when a pool was not used (0 size)         #
 # 20140626 Bugfix in etherrors check                                           #
 # 20140711 Added snmp connection check function                                #
+# 20150203 Bugfix in vol check in percentage calculation                       #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
-help="check_equallogic (c) 2009-2013 Claudio Kuenzler (published under GPL licence)\n
+help="check_equallogic (c) 2009-2015 Claudio Kuenzler (published under GPL licence)\n
 Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]\n
 Options:\n-H Hostname\n-C SNMP-Community name (at least read-only)\n-t Type to check, see list below\n-v Name of volume to check\n-w Warning Threshold\n-c Critical Threshold\n
 Requirements: snmpwalk, awk, grep, wc\n
@@ -847,7 +848,7 @@ perfavailspace=$((${volavailspace}*1024*1024))
 volusedspace=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.7.1.13 | awk "NR==${volarray}")
 humanusedspace=$((${volusedspace} / 1024))
 perfusedspace=$((${volusedspace}*1024*1024))
-volpercentage=$(expr ${volusedspace[${i}]} \* 100 / ${volavailspace[${i}]})
+volpercentage=$(expr ${volusedspace} \* 100 / ${volavailspace})
 
 if [ -n "${warning}" ] || [ -n "${critical}" ]
   then
