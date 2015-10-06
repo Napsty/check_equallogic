@@ -66,7 +66,7 @@
 # 20140626 Bugfix in etherrors check                                           #
 # 20140711 Added snmp connection check function                                #
 # 20150203 Bugfix in vol check in percentage calculation                       #
-# testing Bugfix in vol check if volume not found by Stephane Loeuillet        #
+# 20151006 Bugfix in vol check if volume not found by Stephane Loeuillet       #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
