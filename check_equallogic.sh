@@ -66,6 +66,7 @@
 # 20140626 Bugfix in etherrors check                                           #
 # 20140711 Added snmp connection check function                                #
 # 20150203 Bugfix in vol check in percentage calculation                       #
+# testing Bugfix in vol check if volume not found by Stephane Loeuillet        #
 ################################################################################
 # Usage: ./check_equallogic -H host -C community -t type [-v volume] [-w warning] [-c critical]
 ################################################################################
@@ -842,6 +843,7 @@ if [ -z "${volume}" ]
   echo "CRITICAL - No volume name given."; exit 2
 fi
 volarray=$(snmpwalk -v 2c -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.4 | grep -n "\"${volume}\"" | sed -n '1p' | cut -d : -f1)
+if [ -z "${volarray}" ]; then echo "UNKNOWN - Volume ${volume} does not exist"; exit 3; fi
 volavailspace=$(snmpwalk -v 2c -O vqe -c ${community} ${host} 1.3.6.1.4.1.12740.5.1.7.1.1.8 | awk "NR==${volarray}")
 humanavailspace=$((${volavailspace} / 1024))
 perfavailspace=$((${volavailspace}*1024*1024))
