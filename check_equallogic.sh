@@ -663,29 +663,28 @@ while [ $c2 -lt $c ]
   let poolinuse=poolinuse/1024
   let poolused[$c2]=poolused[$c2]/1024
 
-  result="Pool ${poolname[c2]} Size ${pooltotal[$c2]}GB, Total In Use ${poolinuse}GB (${usedpercent}%) = (Used ${poolused[$c2]}GB + Delegated ${pooldelegated[$c2]}GB + Replication ${poolreplication[$c2]}GB), Free ${freestorage}GB //"
+  result="Pool ${poolname[c2]} Size ${pooltotal[$c2]}GB, Total In Use ${poolinuse}GB (${usedpercent}%) = (Used ${poolused[$c2]}GB + Delegated ${pooldelegated[$c2]}GB + Replication ${poolreplication[$c2]}GB), Free ${freestorage}GB"
 
   if [ -n "${warning}" ] || [ -n "${critical}" ]
     then
     if [ ${usedpercent} -ge ${warning} ] && [ ${usedpercent} -lt ${critical} ]
       then
-      echo -n "WARNING: ${result}"
+      echo "WARNING: ${result}"
       if [ ${exitstate} -ne 2 ]
         then
         exitstate=${STATE_WARNING}
       fi
       elif [ ${usedpercent} -ge ${critical} ]
         then
-        echo -n "CRITICAL: ${result}"
+        echo "CRITICAL: ${result}"
         exitstate=${STATE_CRITICAL}
       else
-        echo -n "OK: ${result}"
+        echo "OK: ${result}"
       fi
     else
-      echo -n "OK: "${result}
+      echo "OK: "${result}
   fi
 
-  echo -n " "
   let c2=c2+1
 done
 
