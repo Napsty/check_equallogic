@@ -724,20 +724,20 @@ while [ $c2 -lt $c ]
     then
     if [ ${usedpercent} -ge ${warning} ] && [ ${usedpercent} -lt ${critical} ]
       then
-      echo -n "WARNING: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
+      echo "WARNING: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
       if [ $bad -ne 2 ]
         then
         bad=1
       fi
     elif [ ${usedpercent} -ge ${critical} ]
       then
-      echo -n "CRITICAL: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
+      echo "CRITICAL: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
       bad=2
     else
-      echo -n "OK: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
+      echo "OK: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
     fi
   else
-    echo -n "OK: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
+    echo "OK: Pool $c2 Total ${pooltotal[$c2]}GB, Used ${poolused[$c2]}GB (${usedpercent}%)|'space used'=${poolused_perfdata}, 'total space'=${pooltotal_perfdata}"
   fi
 
   let c2=c2+1
